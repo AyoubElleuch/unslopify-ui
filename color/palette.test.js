@@ -1,0 +1,21 @@
+const assert = require('node:assert/strict');
+const {generatePalette,contrast,rgbToOklch,gamutHex,SCHEMES}=require('./palette.js');
+assert.equal(contrast('#000000','#ffffff'),21);
+assert.equal(contrast('#777777','#ffffff')<4.5,true);
+assert.ok(Math.abs(contrast('#ff0000','#ffffff')-3.9985)<.001);
+for(const hex of ['#000000','#ffffff','#ff0000','#00ff00','#0000ff','#663399','#808080']){let rgb=hex.match(/../g).slice(0);let channels=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255);let v=rgbToOklch(channels);assert.equal(gamutHex(v.l,v.c,v.h),hex,`roundtrip ${hex}`);for(const scheme of Object.keys(SCHEMES)){let p=generatePalette(hex,{scheme});assert.equal(p.input,hex);assert.equal(Object.keys(p.primary).length,11);assert.equal(Object.keys(p.neutral).length,11);assert.ok(p.roles.light.onPrimary.normalTextAA);assert.ok(p.contrast.lightText>=4.5);assert.ok(p.contrast.lightMuted>=4.5);assert.ok(p.contrast.darkText>=4.5);assert.ok(p.contrast.darkMuted>=4.5);for(const value of [...Object.values(p.primary),...Object.values(p.neutral),...p.accents.flatMap(a=>Object.values(a.colors))])assert.match(value,/^#[0-9a-f]{6}$/)}}
+assert.equal(generatePalette('#808080').accents.length,0);
+assert.equal(generatePalette('#36c').input,'#3366cc');
+assert.throws(()=>generatePalette('not a color'));
+assert.throws(()=>generatePalette('#123456',{scheme:'invented'}));
+const greenDefault=generatePalette('#00ff00',{scheme:'analogous'});
+const greenRequested=generatePalette('#00ff00',{scheme:'analogous',allowEarthPalette:true});
+assert.equal(greenDefault.input,'#00ff00');
+assert.equal(greenDefault.roles.light.primary,'#00ff00');
+assert.ok(greenDefault.policy.omittedAccentHues.length>0);
+assert.equal(greenRequested.accents.length,2);
+assert.equal(greenRequested.policy.omittedAccentHues.length,0);
+assert.equal(generatePalette('#2e4057',{role:'reference'}).input,'#2e4057');
+assert.equal(generatePalette('#2e4057',{role:'reference'}).inputRole,'reference');
+assert.throws(()=>generatePalette('#123456',{role:'invalid'}));
+console.log('Palette tests passed.');
