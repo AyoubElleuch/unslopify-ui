@@ -1,0 +1,11 @@
+{
+  "name": "unslopify-ui-guide",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Install shared design guidance for AI coding assistants",
+  "license": "MIT",
+  "bin": { "unslopify-ui": "bin/cli.js" },
+  "files": ["bin", "guides", "color", "LICENSE"],
+  "engines": { "node": ">=18" },
+  "scripts": { "test": "node --test test/installer.test.js" }
+}
